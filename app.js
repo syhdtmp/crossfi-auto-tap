@@ -14,7 +14,6 @@ JWT_TOKENS.forEach(({ token, workerId }) => {
       "cache-control": "no-cache",
       "pragma": "no-cache",
       "sec-websocket-extensions": "permessage-deflate; client_max_window_bits",
-      "sec-websocket-key": "5d60zYxoVCQ4DEgkPsMMXQ==",
       "sec-websocket-version": "13"
     }
   });
