@@ -9,6 +9,9 @@ export function prettyLog(message, type = 'info') {
     case 'warning':
       console.log(`[${timestamp}] ${chalk.yellow('[WARNING]')}: ${message}`);
       break;
+    case 'success':
+      console.log(`[${timestamp}] ${chalk.green('[SUCCESS]')}: ${message}`);
+      break;
     case 'info':
     default:
       console.log(`[${timestamp}] ${chalk.blue('[INFO]')}: ${message}`);

@@ -21,7 +21,7 @@ function createWebSocket(token, workerId) {
 
   socket.onopen = () => handleSocketOpen(socket, workerId, token);
   socket.onerror = (error) => prettyLog(`[${workerId}] WebSocket Error: ${error}`, 'error');
-  socket.onmessage = (event) => prettyLog(`[${workerId}] Message from server: ${event.data}`);
+  socket.onmessage = (event) => prettyLog(`[${workerId}] Message from server: ${event.data}`, 'success');
   socket.onclose = (event) => handleSocketClose(event, workerId);
 }
 
