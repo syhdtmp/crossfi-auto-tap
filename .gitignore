@@ -3,3 +3,4 @@ tokens.json
 .DS_Store
 *.log
 *.env
+*.hide.js
