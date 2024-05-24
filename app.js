@@ -57,23 +57,31 @@ JWT_TOKENS.forEach(({ token, workerId }) => {
       let simulationData = { taps: [] };
       let clicksPossible = Math.min(30, energyBalance); // Calculate how many clicks can be made in 30 seconds without depleting energy
 
-      for (let i = 0; i < clicksPossible; i++) {
-        simulationData.taps.push({
-          actions: "CLICK",
-          date: currentBaseDate + i * interval
-        });
+      if (clicksPossible >= 10) {
+        for (let i = 0; i < clicksPossible; i++) {
+          simulationData.taps.push({
+            actions: "CLICK",
+            date: currentBaseDate + i * interval
+          });
+        }
+        currentBaseDate += clicksPossible * interval; // Update base date for the next interval
+        energyBalance -= clicksPossible; // Decrement energy balance by the number of clicks made
+        prettyLog(`[${workerId}] Generated ${clicksPossible} clicks for simulation.`);
+      } else {
+        prettyLog(`[${workerId}] Less than 10 clicks possible, no simulation data generated.`);
       }
-      currentBaseDate += clicksPossible * interval; // Update base date for the next interval
-      energyBalance -= clicksPossible; // Decrement energy balance by the number of clicks made
-      prettyLog(`[${workerId}] Generated ${clicksPossible} clicks for simulation.`);
       return simulationData;
     }
 
     async function sendSimulationData(simulationData) {
-      prettyLog(`[${workerId}] Sending simulation data...`);
-      const message = JSON.stringify(["TAP", simulationData]);
-      socket.send("42" + message);
-      prettyLog(`[${workerId}] Simulation data sent with ${simulationData.taps.length} taps.`);
+      if (simulationData.taps.length > 0) {
+        prettyLog(`[${workerId}] Sending simulation data...`);
+        const message = JSON.stringify(["TAP", simulationData]);
+        socket.send("42" + message);
+        prettyLog(`[${workerId}] Simulation data sent with ${simulationData.taps.length} taps.`);
+      } else {
+        prettyLog(`[${workerId}] No simulation data sent as there are no taps.`);
+      }
 
       // Withdraw request after sending simulation data
       let amount = simulationData.taps.length * 0.5; // Calculate amount based on number of clicks
