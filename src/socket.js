@@ -130,9 +130,9 @@ export async function generateSimulationData(userId) {
     state.currentBaseDate += clicksPossible * interval;
     state.energy -= clicksPossible;
     updateUserState(userId, { currentBaseDate: state.currentBaseDate, energy: state.energy });
-    prettyLog(`[${state.userName}] Generated ${clicksPossible} clicks for simulation. Time elapsed: ${timeElapsed}ms.`);
+    prettyLog(`[${state.userName}] Generated ${clicksPossible} clicks for simulation. Time elapsed: ${timeElapsed}ms. Energy left: ${state.energy}`);
   } else {
-    prettyLog(`[${state.userName}] Less than 10 clicks possible, no simulation data generated.`);
+    prettyLog(`[${state.userName}] Less than 10 clicks possible, no simulation data generated. Energy left: ${state.energy}`);
   }
   return simulationData;
 }
