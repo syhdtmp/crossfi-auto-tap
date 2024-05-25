@@ -17,7 +17,7 @@ const WITHDRAWAL_URL = 'https://test-bot.crossfi.org/api/v1/user/wallet/withdraw
 
 const HEARTBEAT_INTERVAL = 25000;
 const RETRY_INTERVAL = 5000;
-const SIMULATION_INTERVAL = 30000;
+const SIMULATION_INTERVAL = 300000;
 
 const TOKEN_MESSAGE_PREFIX = "40";
 const SIMULATION_DATA_PREFIX = "42";
