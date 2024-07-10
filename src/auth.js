@@ -1,6 +1,7 @@
 import { Wallet } from 'ethers';
 import { prettyLog } from './log.js';
-import { getUserState, updateUserState } from './state.js';
+import { getUserState, logUserState, updateUserState } from './state.js';
+import fs from 'fs';
 
 const chainId = "0x103d";
 
@@ -137,4 +138,62 @@ export function parseTelegramData(telegramData) {
     authDate: params.get('auth_date'),
     hash: params.get('hash')
   };
+}
+
+
+export async function fetchUserProfile(userId) {
+  const userState = getUserState(userId);
+  const config = {
+    method: 'GET',
+    headers: {
+      'x-authorization': userState.authToken
+    }
+  };
+
+  try {
+    const response = await fetch('https://testpad.xfi.foundation/api/v1/profile', config);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const profileData = await response.json();
+    const evmWallet = profileData.wallets.find(wallet => wallet.isEVMWallet);
+    const nonEvmWallet = profileData.wallets.find(wallet => !wallet.isEVMWallet);
+
+    updateUserState(userId, {
+      evmAddress: evmWallet ? evmWallet.address : null,
+      mxAddress: nonEvmWallet ? nonEvmWallet.address : null,
+      balance: profileData.balance
+    });
+    console.log(`User profile fetched and updated for user ID: ${userId}`);
+  } catch (error) {
+    console.error(`Failed to fetch user profile for user ID: ${userId}`, error);
+  }
+}
+
+export async function bindReferral(userId) {
+  const userState = getUserState(userId);
+  const config = {
+    method: 'POST',
+    headers: {
+      "accept": "application/json",
+      "content-type": "application/json",
+      "origin": "https://bot.crossfi.org",
+      "referer": "https://bot.crossfi.org/",
+      'x-authorization': userState.authToken
+    },
+    body: JSON.stringify({ referralCode: String(process.env.REFERRAL_CODE) })
+  };
+
+  try {
+    const response = await fetch('https://test-bot.crossfi.org/api/v1/user/referral/bind-referrer', config);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+    }
+    await response.json();
+
+    prettyLog(`[${userState.userName}] Referral bound successfully.`, 'success');
+  } catch (error) {
+    prettyLog(`[${userState.userName}] Failed to bind referral: ${error.message}`, 'error');
+  }
 }

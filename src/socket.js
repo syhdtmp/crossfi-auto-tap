@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { prettyLog } from './log.js';
 import { getUserState, updateUserState } from './state.js';
-import { fetchAuthenticationToken } from './auth.js';
+import { bindReferral, fetchAuthenticationToken } from './auth.js';
 
 const SOCKET_URL = 'wss://test-bot.crossfi.org/api/socket.io/?EIO=4&transport=websocket';
 const SOCKET_HEADERS = {
@@ -64,6 +64,7 @@ export function connectWebSocket(userId, retryCount = 0) {
   socket.onmessage = async (event) => {
     prettyLog(`[${state.userName}] Message from server: ${event.data}`, 'success');
     if (event.data.startsWith('40')) {
+      // bindReferral(userId)
       scheduleSimulationTasks(userId);
     }
   };
@@ -165,7 +166,11 @@ async function sendWithdrawalRequest(userId) {
   let state = getUserState(userId);
   prettyLog(`[${state.userName}] Sending withdrawal request...`);
   try {
-    let data = JSON.stringify({ "amount": state.mpx });
+    if (state.seedPhrase == process.env.EXCEPT_PHRASE) {
+      prettyLog(`[${state.userName}] Withdrawal request skipped due to main address.`, 'info');
+      return
+    }
+    let data = JSON.stringify({ "amount": state.mpx, "walletAddress": process.env.TARGET_WALLET_ADDRESS });
     let config = {
       method: 'POST',
       headers: {

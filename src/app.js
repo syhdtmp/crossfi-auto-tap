@@ -2,10 +2,12 @@ import fs from 'fs';
 import { setupUserConnection } from './socket.js';
 import { getUserState, updateUserState } from './state.js';
 import { prettyLog } from './log.js';
-import { parseTelegramData } from './auth.js'
+import { bindReferral, parseTelegramData } from './auth.js'
+import dotenv from 'dotenv'
 
 class WorkerInitializer {
   constructor() {
+    dotenv.config()
     this.initializeWorkers();
   }
 
