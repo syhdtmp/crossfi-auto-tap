@@ -25,14 +25,19 @@ class WorkerInitializer {
   }
 
   async createWorker(tgWebAppData, seedPhrase) {
-    const { userData } = parseTelegramData(tgWebAppData);
-    const initialState = this.createInitialState(userData, tgWebAppData, seedPhrase);
+    try {
+      const { userData } = parseTelegramData(tgWebAppData);
+      const initialState = this.createInitialState(userData, tgWebAppData, seedPhrase);
 
-    updateUserState(userData.id, initialState);
-    const userState = getUserState(userData.id);
-    prettyLog(`[${userState.userName}] Creating worker...`);
+      updateUserState(userData.id, initialState);
+      const userState = getUserState(userData.id);
+      prettyLog(`[${userState.userName}] Creating worker...`);
 
-    await setupUserConnection(userData.id);
+      await setupUserConnection(userData.id);
+    } catch (error) {
+      prettyLog(`Error creating worker: ${error}. Retrying...`, 'error');
+      await this.createWorker(tgWebAppData, seedPhrase);
+    }
   }
 
   createInitialState(userData, tgWebAppData, seedPhrase) {
