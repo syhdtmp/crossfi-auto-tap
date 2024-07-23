@@ -216,6 +216,8 @@ async function scheduleSimulationTasks(userId) {
 
     if (process.env.WITHDRAWAL_STATUS === 'ENABLED') {
       await verifyMpxWithdrawalEligibility(userId);
+    } else {
+      prettyLog(`[${userState.userName}] Withdrawal status is disabled. Skipping withdrawal process.`);
     }
     prettyLog(`[${userState.userName}] Simulation ${simulationCount} processed.`);
   }
