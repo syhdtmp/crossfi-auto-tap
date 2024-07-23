@@ -33,6 +33,7 @@ export function connectWebSocket(userId, retryCount = 0) {
 
   const maxRetries = 5; // Maximum number of retries
   const state = getUserState(userId);
+  prettyLog(`[${state.userName}] authToken: ${state.authToken}`);
   if (state.socket) {
     state.socket.close();
     prettyLog(`[${state.userName}] Existing WebSocket connection closed.`);
@@ -213,7 +214,9 @@ async function scheduleSimulationTasks(userId) {
       userState = getUserState(userId);
     }
 
-    await verifyMpxWithdrawalEligibility(userId);
+    if (process.env.WITHDRAWAL_STATUS === 'ENABLED') {
+      await verifyMpxWithdrawalEligibility(userId);
+    }
     prettyLog(`[${userState.userName}] Simulation ${simulationCount} processed.`);
   }
 
