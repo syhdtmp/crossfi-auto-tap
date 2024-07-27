@@ -222,17 +222,9 @@ async function scheduleSimulationTasks(userId) {
     prettyLog(`[${userState.userName}] Simulation ${simulationCount} processed.`);
   }
 
-  const startTime = Date.now();
   await proceedSimulation();
   setInterval(async () => {
-    const currentTime = Date.now();
-    if ((currentTime - startTime) >= 12 * 60 * 60 * 1000) { // 12 hours in milliseconds
-      prettyLog(`[${getUserState(userId).userName}] 12 hours passed. Stopping socket and re-establishing user connection...`);
-      getUserState(userId).socket.close();
-      await setupUserConnection(userId);
-    } else {
-      await proceedSimulation();
-    }
+    await proceedSimulation();
   }, SIMULATION_INTERVAL);
 }
 
