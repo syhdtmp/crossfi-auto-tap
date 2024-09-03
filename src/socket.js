@@ -48,11 +48,11 @@ export function connectWebSocket(userId, retryCount = 0) {
 
   socket.onopen = () => {
     prettyLog(`[${state.userName}] Connection established`);
-    socket.send(TOKEN_MESSAGE_PREFIX + JSON.stringify({ "token": state.authToken }));
+    sendMessage(userId, TOKEN_MESSAGE_PREFIX + JSON.stringify({ "token": state.authToken }));
     prettyLog(`[${state.userName}] Sent authToken message`);
 
     setInterval(() => {
-      socket.send(HEARTBEAT_MESSAGE);
+      sendMessage(userId, HEARTBEAT_MESSAGE);
       prettyLog(`[${state.userName}] Sent message "3" to the server`);
     }, HEARTBEAT_INTERVAL);
 
@@ -70,6 +70,7 @@ export function connectWebSocket(userId, retryCount = 0) {
     }
   };
 
+  
   socket.onclose = (event) => {
     if (event.wasClean) {
       prettyLog(`[${state.userName}] WebSocket closed cleanly, code=${event.code}, reason=${event.reason}`);
@@ -81,6 +82,15 @@ export function connectWebSocket(userId, retryCount = 0) {
   };
 
   updateUserState(userId, { socket });
+}
+
+function sendMessage(userId, message) {
+  const state = getUserState(userId);
+  if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+    state.socket.send(message);
+  } else {
+    prettyLog(`[${state.userName}] WebSocket is not open. Current state: ${state.socket.readyState}`, 'error');
+  }
 }
 
 export async function fetchEnergyBalance(userId) {
@@ -144,7 +154,7 @@ export async function sendSimulationData(userId, simulationData) {
   if (simulationData.taps.length > 0) {
     prettyLog(`[${state.userName}] Sending simulation data...`);
     const message = JSON.stringify(["TAP", simulationData]);
-    state.socket.send(SIMULATION_DATA_PREFIX + message);
+    sendMessage(userId, SIMULATION_DATA_PREFIX + message);
     prettyLog(`[${state.userName}] Simulation data sent with ${simulationData.taps.length} taps.`);
   } else {
     prettyLog(`[${state.userName}] No simulation data sent as there are no taps.`);
