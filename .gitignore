@@ -4,3 +4,4 @@ tokens.json
 *.log
 *.env
 *.hide.js
+.vscode/

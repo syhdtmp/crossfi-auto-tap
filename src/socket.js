@@ -24,9 +24,9 @@ const SIMULATION_DATA_PREFIX = "42";
 const HEARTBEAT_MESSAGE = "3";
 
 
-export async function setupUserConnection(userId) {
+export async function setupUserConnection(userId, retryCount = 0) {
   await fetchAuthenticationToken(userId);
-  connectWebSocket(userId);
+  connectWebSocket(userId, retryCount);
 }
 
 export function connectWebSocket(userId, retryCount = 0) {
@@ -76,7 +76,7 @@ export function connectWebSocket(userId, retryCount = 0) {
       prettyLog(`[${state.userName}] WebSocket closed cleanly, code=${event.code}, reason=${event.reason}`);
     } else {
       prettyLog(`[${state.userName}] WebSocket closed unexpectedly.`, 'error');
-      setTimeout(() => connectWebSocket(userId, retryCount + 1), RETRY_INTERVAL);
+      setTimeout(async () => await setupUserConnection(userId, retryCount + 1), RETRY_INTERVAL);
       prettyLog(`[${state.userName}] Attempting to reconnect...`);
     }
   };
