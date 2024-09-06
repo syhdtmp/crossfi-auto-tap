@@ -30,13 +30,21 @@ export async function setupUserConnection(userId, retryCount = 0) {
 }
 
 export function connectWebSocket(userId, retryCount = 0) {
-
   const maxRetries = 5; // Maximum number of retries
   const state = getUserState(userId);
+
+  
+  if (state.socketInitializing) {
+    prettyLog(`[${state.userName}] Socket is being initialized`, 'warning')
+    return
+  }
+
+  updateUserState(userId, { socketInitializing: true })
   prettyLog(`[${state.userName}] authToken: ${state.authToken}`);
-  if (state.socket) {
-    state.socket.close();
-    prettyLog(`[${state.userName}] Existing WebSocket connection closed.`);
+
+  if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+    prettyLog(`[${state.userName}] Socket is already connected`, 'warning')
+    return
   }
 
   if (retryCount >= maxRetries) {
@@ -66,11 +74,12 @@ export function connectWebSocket(userId, retryCount = 0) {
     prettyLog(`[${state.userName}] Message from server: ${event.data}`, 'success');
     if (event.data.startsWith('40')) {
       // bindReferral(userId)
+      updateUserState(userId, { socketInitializing: false })
       scheduleSimulationTasks(userId);
     }
   };
 
-  
+
   socket.onclose = (event) => {
     if (event.wasClean) {
       prettyLog(`[${state.userName}] WebSocket closed cleanly, code=${event.code}, reason=${event.reason}`);
@@ -89,6 +98,7 @@ function sendMessage(userId, message) {
   if (state.socket && state.socket.readyState === WebSocket.OPEN) {
     state.socket.send(message);
   } else {
+    setTimeout(async () => await setupUserConnection(userId), 100);
     prettyLog(`[${state.userName}] WebSocket is not open. Current state: ${state.socket.readyState}`, 'error');
   }
 }

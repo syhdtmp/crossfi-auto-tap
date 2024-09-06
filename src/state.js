@@ -13,10 +13,11 @@ function getUserState(userId) {
       seedPhrase: null,
       userId: null,
       socket: null,
+      socketInitializing: false,
       energy: 0,
       energyPremium: 0,
       mpx: 0,
-      xfi: 0
+      xfi: 0,
     };
   }
   return userStates[userId];
